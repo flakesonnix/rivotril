@@ -8,6 +8,5 @@
   outputs = {self, nixpkgs}: {
     formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.alejandra;
     lib = import ./lib;
-    flake.lib = import ./lib;
   };
 }

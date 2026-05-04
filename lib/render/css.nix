@@ -19,4 +19,7 @@ in rec {
 
   renderSheet = rules:
     builtins.concatStringsSep "\n\n" (map renderRule rules);
+
+  toCSS = selector: declarations:
+    renderRule { inherit selector declarations; };
 }

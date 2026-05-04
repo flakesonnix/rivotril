@@ -160,20 +160,21 @@ in {
       packageTags = mergedHome.packageTags or [];
     };
 
-    baseConfig =
+    baseConfig = lib.foldl' lib.recursiveUpdate {} [
       (mergedHome.moduleFlags or {})
-      // lib.optionalAttrs (selectedPackageNames != []) (
+      (lib.optionalAttrs (selectedPackageNames != []) (
         composition.renderEnabledAttrs {
           inherit lib;
           path = packagePath;
           names = selectedPackageNames;
         }
-      )
-      // lib.optionalAttrs (mergedHome ? home) {inherit (mergedHome) home;}
-      // lib.optionalAttrs (mergedHome ? programs) {inherit (mergedHome) programs;}
-      // lib.optionalAttrs (mergedHome ? services) {inherit (mergedHome) services;}
-      // lib.optionalAttrs (mergedHome ? xdg) {inherit (mergedHome) xdg;}
-      // lib.optionalAttrs (mergedHome ? nix) {inherit (mergedHome) nix;};
+      ))
+      (lib.optionalAttrs (mergedHome ? home) {inherit (mergedHome) home;})
+      (lib.optionalAttrs (mergedHome ? programs) {inherit (mergedHome) programs;})
+      (lib.optionalAttrs (mergedHome ? services) {inherit (mergedHome) services;})
+      (lib.optionalAttrs (mergedHome ? xdg) {inherit (mergedHome) xdg;})
+      (lib.optionalAttrs (mergedHome ? nix) {inherit (mergedHome) nix;})
+    ];
   in
     builtins.seq validationAssertion (lib.recursiveUpdate baseConfig (mergedHome.settings or {}));
 }

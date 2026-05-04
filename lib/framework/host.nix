@@ -179,36 +179,38 @@ in {
     };
   in
     builtins.seq validationAssertion (
-      (mergedHost.moduleFlags or {})
-      // lib.optionalAttrs (selectedPackageNames != []) (
-        composition.renderEnabledAttrs {
+      (lib.foldl' lib.recursiveUpdate {} [
+        (mergedHost.moduleFlags or {})
+        (lib.optionalAttrs (selectedPackageNames != []) (
+          composition.renderEnabledAttrs {
+            inherit lib;
+            path = packagePath;
+            names = selectedPackageNames;
+          }
+        ))
+        (composition.renderOptionalPath {
           inherit lib;
-          path = packagePath;
-          names = selectedPackageNames;
-        }
-      )
-      // composition.renderOptionalPath {
-        inherit lib;
-        path = basePackagePath;
-        value = mergedHost.basePackages or null;
-      }
-      // composition.renderOptionalPath {
-        inherit lib;
-        path = systemPackagePath;
-        value =
-          if systemPackagePath == null
-          then null
-          else mergedHost.systemPackages or [];
-      }
-      // composition.renderOptionalPath {
-        inherit lib;
-        path = fontPackagePath;
-        value =
-          if fontPackagePath == null
-          then null
-          else mergedHost.fontPackages or [];
-      }
-      // (mergedHost.settings or {})
+          path = basePackagePath;
+          value = mergedHost.basePackages or null;
+        })
+        (composition.renderOptionalPath {
+          inherit lib;
+          path = systemPackagePath;
+          value =
+            if systemPackagePath == null
+            then null
+            else mergedHost.systemPackages or [];
+        })
+        (composition.renderOptionalPath {
+          inherit lib;
+          path = fontPackagePath;
+          value =
+            if fontPackagePath == null
+            then null
+            else mergedHost.fontPackages or [];
+        })
+        (mergedHost.settings or {})
+      ])
     );
 
   mkHost = host: host;

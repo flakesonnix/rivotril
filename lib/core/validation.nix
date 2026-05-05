@@ -275,7 +275,7 @@ let
         roles
       )
     );
-in {
+in rec {
   validateHost = {
     lib,
     hostRoot,
@@ -573,4 +573,34 @@ in {
     invalidModuleFlagKeys
     normalizeRoleList
     ;
+
+  validPackageTargets = ["system" "user" "home"];
+
+  validatePackageRegistry = registry: let
+    entries = builtins.attrNames registry;
+    checkEntry = name: let
+      entry = registry.${name};
+      targets = entry.targets or [];
+      invalidTargets = builtins.filter (t: !(builtins.elem t validPackageTargets)) targets;
+      hasPackages = builtins.any (t: builtins.hasAttr "packages" entry && builtins.isAttrs entry.packages && builtins.isList (entry.packages.${t} or [])) targets;
+      missingDescription = entry.description or "" == "";
+    in {
+      inherit invalidTargets;
+      emptyDescription = missingDescription;
+      noPackages = !hasPackages && targets != [];
+    };
+    results =
+      map (name: {
+        inherit name;
+        result = checkEntry name;
+      })
+      entries;
+    allInvalidTargets = builtins.concatLists (map (entry: map (t: "${entry.name}:${t}") entry.result.invalidTargets) results);
+    entriesWithMissingDesc = builtins.filter (entry: entry.result.emptyDescription) results;
+    entriesWithNoPackages = builtins.filter (entry: entry.result.noPackages) results;
+  in {
+    invalidTargets = allInvalidTargets;
+    entriesWithMissingDescription = map (entry: entry.name) entriesWithMissingDesc;
+    entriesWithNoPackages = map (entry: entry.name) entriesWithNoPackages;
+  };
 }

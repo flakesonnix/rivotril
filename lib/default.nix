@@ -12,6 +12,7 @@ let
   renderCommand = import ./render/command.nix;
   renderKdl = import ./render/kdl.nix;
   renderCss = import ./render/css.nix;
+  theme = import ./theme.nix;
 
   frameworkKeys = import ./framework/keys.nix;
   frameworkActions = import ./framework/actions.nix;
@@ -66,6 +67,8 @@ in
       kdl = renderKdl;
       css = renderCss;
     };
+
+    inherit theme;
 
     framework = {
       keys = frameworkKeys;
